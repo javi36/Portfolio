@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — Seite nicht gefunden</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<style>
+@font-face{font-family:'Fraunces';src:url('fonts/Fraunces.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Fraunces';src:url('fonts/Fraunces-Italic.woff2') format('woff2');font-weight:100 900;font-style:italic;font-display:swap}
+@font-face{font-family:'Space Grotesk';src:url('fonts/SpaceGrotesk.woff2') format('woff2');font-weight:300 700;font-style:normal;font-display:swap}
+:root{--ink:#0D1B2A;--plum:#26091F;--teal:#27B5A4;--coral:#E8506B;--amber:#F2A33C;--text-light:#F3EFE8}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Space Grotesk',sans-serif;min-height:100svh;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--text-light);background:linear-gradient(135deg,var(--ink) 0%,var(--plum) 100%);padding:24px}
+.eyebrow{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--teal)}
+h1{font-family:'Fraunces',serif;font-weight:560;font-size:clamp(4rem,15vw,7rem);line-height:1;margin:.15em 0}
+h1 .i{font-style:italic;color:var(--amber)}
+p{font-size:1rem;opacity:.85;max-width:440px;margin:0 auto}
+.clave{display:flex;align-items:center;gap:12px;justify-content:center;padding:34px 0 30px;color:var(--coral)}
+.clave .beat{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.28}
+.clave .hit{opacity:1;animation:clavePulse 3.6s infinite}
+.clave .hit:nth-child(4){animation-delay:.675s}
+.clave .hit:nth-child(6){animation-delay:1.125s}
+.clave .hit:nth-child(10){animation-delay:2.025s}
+.clave .hit:nth-child(13){animation-delay:2.7s}
+.clave .hit:nth-child(16){animation-delay:3.375s}
+@keyframes clavePulse{0%,12%,100%{transform:scale(1)}6%{transform:scale(1.9)}}
+@media (prefers-reduced-motion:reduce){.clave .hit{animation:none}}
+.home-btn{display:inline-flex;align-items:center;gap:9px;font:inherit;font-weight:600;font-size:.92rem;text-decoration:none;padding:12px 26px;border-radius:99px;background:var(--amber);color:var(--ink);transition:transform .2s,box-shadow .2s}
+.home-btn:hover,.home-btn:focus-visible{transform:translateY(-2px);box-shadow:0 12px 26px rgba(242,163,60,.3)}
+[data-lang-block]{display:none}
+[data-lang-block].active{display:block}
+:focus-visible{outline:2.5px solid var(--teal);outline-offset:3px;border-radius:4px}
+</style>
+</head>
+<body>
+<main>
+  <span class="eyebrow">Javier Martinez Alvarez</span>
+  <h1>4<span class="i">0</span>4</h1>
+
+  <div data-lang-block="de">
+    <p>Diese Seite gibt es nicht — vielleicht hat sie sich weggedreht. Zurück zur Startseite und weiter im Takt.</p>
+  </div>
+  <div data-lang-block="en">
+    <p>This page doesn't exist — maybe it spun away. Head back to the homepage and stay on beat.</p>
+  </div>
+  <div data-lang-block="es">
+    <p>Esta página no existe — quizá se fue bailando. Vuelve a la página principal y sigue el ritmo.</p>
+  </div>
+
+  <div class="clave" aria-hidden="true">
+    <span class="beat"></span><span class="beat"></span><span class="beat"></span><span class="beat hit"></span><span class="beat"></span><span class="beat hit"></span><span class="beat"></span><span class="beat"></span><span class="beat"></span><span class="beat hit"></span><span class="beat"></span><span class="beat"></span><span class="beat hit"></span><span class="beat"></span><span class="beat"></span><span class="beat hit"></span>
+  </div>
+
+  <a class="home-btn" id="home-btn" href="/">← Zur Startseite</a>
+</main>
+
+<script>
+/* Sprache aus gespeicherter Wahl bzw. ?lang= übernehmen */
+const LABELS = {de:"← Zur Startseite", en:"← Back to homepage", es:"← Volver al inicio"};
+const TITLES = {de:"404 — Seite nicht gefunden", en:"404 — Page not found", es:"404 — Página no encontrada"};
+let lang = "de";
+try {
+  const urlLang = new URLSearchParams(location.search).get("lang");
+  if (["de","en","es"].includes(urlLang)) lang = urlLang;
+  else lang = localStorage.getItem("javi_lang") || "de";
+} catch(e){}
+if (!["de","en","es"].includes(lang)) lang = "de";
+document.documentElement.lang = lang;
+document.title = TITLES[lang];
+document.querySelectorAll("[data-lang-block]").forEach(b =>
+  b.classList.toggle("active", b.getAttribute("data-lang-block") === lang));
+const btn = document.getElementById("home-btn");
+btn.textContent = LABELS[lang];
+btn.href = "/?lang=" + lang;
+</script>
+</body>
+</html>

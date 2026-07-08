@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Portfolio-Inhalte bearbeiten</title>
+<style>
+@font-face{font-family:'Space Grotesk';src:url('fonts/SpaceGrotesk.woff2') format('woff2');font-weight:300 700;font-style:normal;font-display:swap}
+</style>
+<style>
+:root{--ink:#0D1B2A;--teal:#27B5A4;--coral:#E8506B;--amber:#F2A33C;--paper:#F6F4EF;--line:rgba(13,27,42,.14)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Space Grotesk',sans-serif;background:var(--paper);color:#1B222B;font-size:15px;line-height:1.5;padding-bottom:120px}
+.topbar{position:sticky;top:0;z-index:20;background:var(--ink);color:#fff;padding:14px 22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.topbar h1{font-size:1.05rem;font-weight:600;margin-right:auto}
+button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:9px 16px;font-weight:600}
+.btn-primary{background:var(--teal);color:var(--ink)}
+.btn-ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.4)}
+.btn-danger{background:transparent;color:var(--coral);border:1.5px solid var(--coral);padding:5px 11px;font-size:.8rem}
+.btn-add{background:var(--ink);color:#fff;margin-top:12px}
+.list-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:2px 0 14px}
+.btn-sort{background:#fff;color:var(--ink);border:1.5px solid var(--line);padding:7px 12px;font-size:.84rem}
+.btn-primary:hover{filter:brightness(1.08)}
+.wrap{max-width:1050px;margin:0 auto;padding:26px 22px}
+.hint{background:#FFF7E6;border:1px solid #F2D49B;border-radius:10px;padding:14px 18px;margin-bottom:24px;font-size:.9rem}
+details{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:16px;overflow:hidden}
+summary{cursor:pointer;padding:16px 20px;font-weight:600;font-size:1.02rem;list-style:none;display:flex;align-items:center;gap:10px}
+summary::before{content:"▸";transition:transform .2s;font-size:.8em}
+details[open] summary::before{transform:rotate(90deg)}
+.d-body{padding:4px 20px 20px}
+label{display:block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;opacity:.65;margin:12px 0 4px}
+input[type=text],textarea{width:100%;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:#FBFAF7}
+textarea{min-height:64px;resize:vertical}
+input:focus,textarea:focus{outline:2px solid var(--teal);outline-offset:1px}
+.lang-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.lang-row>div{position:relative}
+.lang-tag{position:absolute;top:-9px;right:8px;font-size:.62rem;font-weight:700;letter-spacing:.1em;background:var(--ink);color:#fff;padding:1px 7px;border-radius:99px}
+.item-card{border:1px solid var(--line);border-radius:10px;padding:14px 16px 16px;margin-top:14px;background:#FBFAF7;position:relative}
+.item-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.item-title{font-weight:600;font-size:.9rem;opacity:.8}
+.field-label{font-weight:600;font-size:.82rem;margin-top:14px;color:var(--ink)}
+select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:.85rem;margin-top:8px}
+.status{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 22px;border-radius:99px;font-size:.85rem;opacity:0;transition:opacity .3s;pointer-events:none}
+.status.show{opacity:1}
+@media(max-width:760px){
+  .lang-row{grid-template-columns:1fr}
+  .wrap{padding:20px 14px}
+  .topbar{padding:12px 14px;gap:8px}
+  .topbar h1{width:100%}
+  .topbar button{flex:1;padding:9px 10px;font-size:.85rem}
+  .d-body{padding:4px 14px 16px}
+  .item-card{padding:12px 12px 14px}
+  summary{padding:14px 14px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>⚙️ Portfolio-Admin</h1>
+  <button class="btn-ghost" id="btn-import">content.js importieren</button>
+  <input type="file" id="file-import" accept=".js,.json" style="display:none">
+  <button class="btn-ghost" id="btn-preview">Vorschau öffnen</button>
+  <button class="btn-primary" id="btn-export">💾 content.js exportieren</button>
+</div>
+
+<div class="wrap">
+  <div class="hint">
+    <strong>So funktioniert's:</strong> Bearbeite die Felder unten (jeweils DE / EN / ES nebeneinander).
+    Mit <em>Vorschau öffnen</em> siehst du deine Änderungen live in der Website, ohne etwas zu speichern.
+    Wenn alles passt: <em>content.js exportieren</em> und die heruntergeladene Datei auf deinem Hosting
+    die bestehende <code>content.js</code> ersetzen lassen. Die <code>admin.html</code> selbst gehört
+    <strong>nicht</strong> auf den Server — sie bleibt lokal bei dir.
+  </div>
+
+  <details open><summary>👤 Basisdaten &amp; Kontakt</summary><div class="d-body" id="sec-meta"></div></details>
+  <details><summary>🔗 Social-Media-Links</summary><div class="d-body" id="sec-socials"></div></details>
+  <details><summary>📝 Texte (Hero, Über mich, Titel, Kontakt)</summary><div class="d-body" id="sec-ui"></div></details>
+  <details><summary>🎓 Akademischer / beruflicher Werdegang</summary><div class="d-body" id="sec-academic"></div></details>
+  <details><summary>💃 Tänzerischer Werdegang</summary><div class="d-body" id="sec-dance"></div></details>
+  <details><summary>🧰 Skills (Chips)</summary><div class="d-body" id="sec-skills"></div></details>
+  <details><summary>⭐ Projekte &amp; Highlights</summary><div class="d-body" id="sec-projects"></div></details>
+  <details><summary>🖼️ Bilder (Profil &amp; Tanz-Galerie)</summary><div class="d-body" id="sec-images"></div></details>
+</div>
+
+<div class="status" id="status"></div>
+
+<script src="content.js"></script>
+<script>
+/* Arbeitskopie der Inhalte (deep clone, damit das Original unberührt bleibt) */
+let DATA = JSON.parse(JSON.stringify(window.SITE_CONTENT));
+const LANGS = ["de","en","es"];
+
+/* Fehlende Strukturen ergänzen (z.B. bei Import einer älteren content.js) */
+function normalizeData(d){
+  const emptyMl = () => ({de:"",en:"",es:""});
+  d.images = d.images || {};
+  d.images.profile = d.images.profile || {url:"",alt:emptyMl(),caption:emptyMl()};
+  d.images.profile.alt = d.images.profile.alt || emptyMl();
+  d.images.profile.caption = d.images.profile.caption || emptyMl();
+  d.images.profile.fit = d.images.profile.fit || "cover";
+  d.images.profile.pos = d.images.profile.pos || "center";
+  d.images.dance_gallery = Array.isArray(d.images.dance_gallery) ? d.images.dance_gallery : [];
+  d.images.dance_gallery.forEach(g => {
+    g.alt = g.alt || emptyMl(); g.caption = g.caption || emptyMl();
+    g.url = g.url || ""; g.instagram = g.instagram || "";
+    g.fit = g.fit || "cover"; g.pos = g.pos || "center";
+  });
+  (d.projects || []).forEach(p => {
+    p.image = p.image || {url:"",alt:emptyMl(),caption:emptyMl()};
+    p.image.alt = p.image.alt || emptyMl();
+    p.image.caption = p.image.caption || emptyMl();
+    p.image.fit = p.image.fit || "cover";
+    p.image.pos = p.image.pos || "center";
+    p.link = p.link || {url:"",label:emptyMl()};
+    p.link.label = p.link.label || emptyMl();
+    p.highlight = !!p.highlight;
+  });
+  d.booking = d.booking || {url:"",label:{de:"Termin buchen",en:"Book an appointment",es:"Reservar una cita"}};
+  d.booking.label = d.booking.label || emptyMl();
+  d.news = d.news || {text:emptyMl()};
+  d.news.text = d.news.text || emptyMl();
+  d.skills = d.skills || {};
+  d.skills.lang = d.skills.lang || {chips:[]};
+  d.skills.soft = d.skills.soft || {chips:[]};
+  return d;
+}
+normalizeData(DATA);
+
+/* Menschenlesbare Labels für die UI-Textschlüssel */
+const UI_LABELS = {
+  nav_about:"Navigation: Über mich", nav_academic:"Navigation: Werdegang", nav_dance:"Navigation: Tanz",
+  nav_skills:"Navigation: Skills", nav_projects:"Navigation: Projekte", nav_contact:"Navigation: Kontakt",
+  hero_sci_eyebrow:"Hero links: Überzeile", hero_sci_title:"Hero links: Titel", hero_sci_text:"Hero links: Text",
+  hero_dance_eyebrow:"Hero rechts: Überzeile", hero_dance_title:"Hero rechts: Titel", hero_dance_text:"Hero rechts: Text",
+  hero_badge_tag:"Hero-Karte: Slogan", hero_scroll:"Scroll-Hinweis",
+  about_eyebrow:"Über mich: Überzeile", about_title:"Über mich: Titel", about_lede:"Über mich: Einleitung",
+  about_sci_h:"Über mich: Titel Analytiker", about_sci_p:"Über mich: Text Analytiker",
+  about_dance_h:"Über mich: Titel Tänzer", about_dance_p:"Über mich: Text Tänzer",
+  about_bridge:"Über mich: Brücken-Box (HTML erlaubt)",
+  acad_eyebrow:"Werdegang: Überzeile", acad_title:"Werdegang: Titel", acad_lede:"Werdegang: Einleitung",
+  acad_education_h:"Werdegang: Spalte Ausbildung", acad_experience_h:"Werdegang: Spalte Erfahrung",
+  dance_eyebrow:"Tanz: Überzeile", dance_title:"Tanz: Titel", dance_lede:"Tanz: Einleitung",
+  dance_education_h:"Tanz: Spalte Ausbildung", dance_experience_h:"Tanz: Spalte Erfahrung", timeline_empty:"Timeline: Text, wenn leer",
+  skills_eyebrow:"Skills: Überzeile", skills_title:"Skills: Titel",
+  skills_sci_h:"Skills: Titel Data Science", skills_sci_note:"Skills: Notiz Data Science",
+  skills_dance_h:"Skills: Titel Tanz", skills_dance_note:"Skills: Notiz Tanz",
+  proj_eyebrow:"Projekte: Überzeile", proj_title:"Projekte: Titel", proj_lede:"Projekte: Einleitung",
+  tag_sci:"Projekt-Label: Data Science", tag_dance:"Projekt-Label: Tanz", ph_img:"Platzhalter-Bild-Text",
+  contact_eyebrow:"Kontakt: Überzeile", contact_title:"Kontakt: Titel", contact_lede:"Kontakt: Einleitung",
+  footer_line:"Footer-Zeile",
+  pos_line:"Positionierung: Satz unter dem Hero",
+  cv_button:"CV-Button: Beschriftung",
+  dance_teach_h:"Tanz: Titel Teaching Approach",
+  dance_teach_p:"Tanz: Text Teaching Approach",
+  bridge_eyebrow:"Bridge-Sektion: Überzeile",
+  bridge_title:"Bridge-Sektion: Titel (Wo Daten auf Bewegung treffen)",
+  bridge_text:"Bridge-Sektion: Text",
+  contact_data_h:"Kontakt: Titel Karte Data/IT",
+  contact_data_p:"Kontakt: Text Karte Data/IT",
+  contact_dance_h:"Kontakt: Titel Karte Tanz",
+  contact_dance_p:"Kontakt: Text Karte Tanz",
+  proj_highlight:"Projekte: Highlight-Badge-Text",
+  proj_link:"Projekte: Standard-Beschriftung des Link-Buttons",
+  skills_lang_h:"Skills: Titel Sprachen",
+  skills_soft_h:"Skills: Titel Soft Skills",
+  insta_view:"Galerie: Instagram-Fallback-Link-Text",
+  footer_privacy:"Footer: Beschriftung Datenschutz-Link",
+  gallery_h:"Tanz: Titel Bildergalerie"
+};
+
+function el(tag, attrs = {}, children = []){
+  const e = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs)){
+    if (k === "text") e.textContent = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v);
+  }
+  for (const c of children) e.appendChild(c);
+  return e;
+}
+
+/* Eingabezeile DE/EN/ES für ein {de,en,es}-Objekt; schreibt direkt in obj */
+function langRow(obj, useTextarea = false){
+  const row = el("div", {class:"lang-row"});
+  for (const lang of LANGS){
+    const wrapper = el("div");
+    wrapper.appendChild(el("span",{class:"lang-tag",text:lang.toUpperCase()}));
+    const inp = el(useTextarea ? "textarea" : "input", useTextarea ? {} : {type:"text"});
+    inp.value = obj[lang] ?? "";
+    inp.addEventListener("input", () => { obj[lang] = inp.value; });
+    wrapper.appendChild(inp);
+    row.appendChild(wrapper);
+  }
+  return row;
+}
+
+/* ---------- Basisdaten ---------- */
+function renderMetaSec(){
+  const c = document.getElementById("sec-meta"); c.innerHTML = "";
+  for (const [key,label] of [["name","Name"],["location","Wohnort"],["email","E-Mail"],["phone","Telefon"]]){
+    c.appendChild(el("label",{text:label}));
+    const inp = el("input",{type:"text"});
+    inp.value = DATA.meta[key];
+    inp.addEventListener("input", () => DATA.meta[key] = inp.value);
+    c.appendChild(inp);
+  }
+  /* Buchungslink: z.B. Google-Kalender-Terminplan fuer Privatstunden */
+  c.appendChild(el("div",{class:"field-label",text:"Online-Buchung (optional — z.B. Google-Kalender-Terminplan)"}));
+  c.appendChild(el("label",{text:"Buchungslink (leer = Button wird ausgeblendet)"}));
+  const burl = el("input",{type:"text",placeholder:"https://calendar.app.google/…"});
+  burl.value = DATA.booking.url || "";
+  burl.addEventListener("input", () => DATA.booking.url = burl.value.trim());
+  c.appendChild(burl);
+  c.appendChild(el("div",{class:"field-label",text:"Button-Beschriftung (erscheint in der Kontakt-Karte „Tanz“)"}));
+  c.appendChild(langRow(DATA.booking.label));
+  /* Aktuell-Zeile im Hero-Band */
+  c.appendChild(el("div",{class:"field-label",text:"Aktuell-Zeile (optional — erscheint über der Positionierung, leer = ausgeblendet)"}));
+  c.appendChild(el("label",{text:"z.B. „Offen für Praktika ab Sommer 2027“ oder „Neue Kurse ab August“"}));
+  c.appendChild(langRow(DATA.news.text));
+}
+
+/* ---------- Socials ---------- */
+function renderSocialsSec(){
+  const c = document.getElementById("sec-socials"); c.innerHTML = "";
+  c.appendChild(el("div",{class:"item-title",text:"Leeres Feld = Icon wird auf der Website ausgeblendet."}));
+  for (const key of Object.keys(DATA.socials)){
+    c.appendChild(el("label",{text:key}));
+    const inp = el("input",{type:"text",placeholder:"https://…"});
+    inp.value = DATA.socials[key];
+    inp.addEventListener("input", () => DATA.socials[key] = inp.value);
+    c.appendChild(inp);
+  }
+}
+
+/* ---------- UI-Texte ---------- */
+function renderUiSec(){
+  const c = document.getElementById("sec-ui"); c.innerHTML = "";
+  const keys = Object.keys(DATA.ui.de);
+  for (const key of keys){
+    c.appendChild(el("div",{class:"field-label",text:UI_LABELS[key] || key}));
+    /* Proxy-Objekt, das je Sprache in DATA.ui[lang][key] schreibt */
+    const proxy = {};
+    for (const lang of LANGS){
+      Object.defineProperty(proxy, lang, {
+        get: () => DATA.ui[lang][key],
+        set: v => DATA.ui[lang][key] = v
+      });
+    }
+    const long = (DATA.ui.de[key] || "").length > 70;
+    c.appendChild(langRow(proxy, long));
+  }
+}
+
+/* ---------- Timeline-Listen (academic & dance) ---------- */
+function timelineRankAdmin(item){
+  const raw = Object.values(item.date || {}).filter(Boolean).join(" | ");
+  const lower = raw.toLowerCase();
+  const numericDates = [...raw.matchAll(/(\d{1,2})[.\/](\d{4})/g)]
+    .map(m => Number(m[2]) * 100 + Number(m[1]));
+  const years = [...raw.matchAll(/(?:19|20)\d{2}/g)].map(m => Number(m[0]) * 100);
+  const values = numericDates.length ? numericDates : years;
+  const start = values.length ? Math.min(...values) : 999912;
+  const end = values.length ? Math.max(...values) : 999912;
+  const isCurrent = /(seit|since|desde|fortlaufend|ongoing|en curso|present|presente|heute|today|hoy|actualidad)/i.test(lower) || end >= new Date().getFullYear() * 100;
+  return {isCurrent,start,end};
+}
+function inferTimelineCategoryAdmin(item){
+  if (item.category === "education" || item.category === "experience") return item.category;
+  const raw = `${item.title?.de || ""} ${item.org?.de || ""} ${item.text?.de || ""}`.toLowerCase();
+  return /(bsc|bachelor|berufsmatur|lehre|apprenticeship|ausbildung|training|formación|dsalsa|pedagog)/i.test(raw) ? "education" : "experience";
+}
+function sortTimelineList(listRef){
+  listRef.forEach(item => { item.category = inferTimelineCategoryAdmin(item); });
+  listRef.sort((a,b) => {
+    const cat = (a.category === "education" ? 0 : 1) - (b.category === "education" ? 0 : 1);
+    if (cat !== 0) return cat;
+    const ar = timelineRankAdmin(a), br = timelineRankAdmin(b);
+    const ap = ar.isCurrent ? ar.start : ar.end;
+    const bp = br.isCurrent ? br.start : br.end;
+    const as = ar.isCurrent ? ar.end : ar.start;
+    const bs = br.isCurrent ? br.end : br.start;
+    return Number(br.isCurrent) - Number(ar.isCurrent) || bp - ap || bs - as;
+  });
+}
+function renderListSec(containerId, listRef, kind){
+  const c = document.getElementById(containerId); c.innerHTML = "";
+  const tools = el("div",{class:"list-tools"});
+  tools.appendChild(el("button",{class:"btn-sort",text:"Nach Bereich & Aktualität sortieren",onclick:() => { sortTimelineList(listRef); renderListSec(containerId,listRef,kind); }}));
+  tools.appendChild(el("span",{class:"item-title",text:"Bereich wählen: Ausbildung oder Erfahrung. Laufende Einträge mit „Seit …“ erfassen."}));
+  c.appendChild(tools);
+  listRef.forEach((item, i) => {
+    item.category = inferTimelineCategoryAdmin(item);
+    const card = el("div",{class:"item-card"});
+    const head = el("div",{class:"item-head"},[
+      el("span",{class:"item-title",text:(i+1)+". "+(item.title?.de || "Neuer Eintrag")}),
+      el("button",{class:"btn-danger",text:"Löschen",onclick:() => {
+        if (confirm("Diesen Eintrag wirklich löschen?")){ listRef.splice(i,1); renderListSec(containerId,listRef,kind); }
+      }})
+    ]);
+    card.appendChild(head);
+    card.appendChild(el("div",{class:"field-label",text:"Bereich"}));
+    const cat = el("select");
+    cat.appendChild(el("option",{value:"education",text:"Ausbildung"}));
+    cat.appendChild(el("option",{value:"experience",text:"Erfahrung"}));
+    cat.value = item.category;
+    cat.addEventListener("change", () => item.category = cat.value);
+    card.appendChild(cat);
+    for (const [field,label,ta] of [["date","Zeitraum",false],["title","Titel",false],["org","Organisation",false],["text","Beschreibung",true]]){
+      card.appendChild(el("div",{class:"field-label",text:label}));
+      card.appendChild(langRow(item[field], ta));
+    }
+    c.appendChild(card);
+  });
+  c.appendChild(el("button",{class:"btn-add",text:"+ Eintrag hinzufügen",onclick:() => {
+    listRef.push({category:"experience",date:{de:"",en:"",es:""},title:{de:"",en:"",es:""},org:{de:"",en:"",es:""},text:{de:"",en:"",es:""}});
+    renderListSec(containerId,listRef,kind);
+  }}));
+}
+
+/* ---------- Skills-Chips ---------- */
+function renderSkillsSec(){
+  const c = document.getElementById("sec-skills"); c.innerHTML = "";
+  for (const [group,label] of [["sci","Data Science & IT"],["dance","Tanz & Pädagogik"],["lang","Sprachen"],["soft","Soft Skills"]]){
+    c.appendChild(el("div",{class:"field-label",text:"— "+label+" —"}));
+    const chips = DATA.skills[group].chips;
+    chips.forEach((chip,i) => {
+      const card = el("div",{class:"item-card"});
+      card.appendChild(el("div",{class:"item-head"},[
+        el("span",{class:"item-title",text:"Chip "+(i+1)}),
+        el("button",{class:"btn-danger",text:"Löschen",onclick:() => { chips.splice(i,1); renderSkillsSec(); }})
+      ]));
+      card.appendChild(langRow(chip.text));
+      const chk = el("label",{class:"chk"});
+      const box = el("input",{type:"checkbox"});
+      box.checked = !!chip.hot;
+      box.addEventListener("change", () => chip.hot = box.checked);
+      chk.appendChild(box);
+      chk.appendChild(document.createTextNode(" Hervorheben (farbiger Chip)"));
+      card.appendChild(chk);
+      c.appendChild(card);
+    });
+    c.appendChild(el("button",{class:"btn-add",text:"+ Chip hinzufügen",onclick:() => {
+      chips.push({text:{de:"",en:"",es:""},hot:false}); renderSkillsSec();
+    }}));
+  }
+}
+
+/* ---------- Projekte ---------- */
+function renderProjectsSec(){
+  const c = document.getElementById("sec-projects"); c.innerHTML = "";
+  DATA.projects.forEach((p,i) => {
+    const card = el("div",{class:"item-card"});
+    card.appendChild(el("div",{class:"item-head"},[
+      el("span",{class:"item-title",text:(i+1)+". "+(p.title?.de || "Neues Projekt")}),
+      el("button",{class:"btn-danger",text:"Löschen",onclick:() => {
+        if (confirm("Dieses Projekt wirklich löschen?")){ DATA.projects.splice(i,1); renderProjectsSec(); }
+      }})
+    ]));
+    card.appendChild(el("div",{class:"field-label",text:"Kategorie"}));
+    const sel = el("select");
+    sel.appendChild(el("option",{value:"sci",text:"Data Science (blau)"}));
+    sel.appendChild(el("option",{value:"dance",text:"Tanz (koralle)"}));
+    sel.value = p.tag;
+    sel.addEventListener("change", () => p.tag = sel.value);
+    card.appendChild(sel);
+    card.appendChild(el("div",{class:"field-label",text:"Titel"}));
+    card.appendChild(langRow(p.title));
+    card.appendChild(el("div",{class:"field-label",text:"Beschreibung"}));
+    card.appendChild(langRow(p.text, true));
+    /* Highlight-Flag: Projekt wird zuerst angezeigt und mit Badge markiert */
+    const chk = el("label",{class:"chk"});
+    const box = el("input",{type:"checkbox"});
+    box.checked = !!p.highlight;
+    box.addEventListener("change", () => p.highlight = box.checked);
+    chk.appendChild(box);
+    chk.appendChild(document.createTextNode(" Als Highlight hervorheben (Badge, erscheint zuerst)"));
+    card.appendChild(chk);
+    /* Optionaler Projekt-Link */
+    card.appendChild(el("div",{class:"field-label",text:"Projekt-Link (optional — z.B. GitHub, Video, Artikel)"}));
+    card.appendChild(el("label",{text:"Link-URL (leer = kein Button)"}));
+    const linkInp = el("input",{type:"text",placeholder:"z.B. https://github.com/…"});
+    linkInp.value = p.link.url || "";
+    linkInp.addEventListener("input", () => p.link.url = linkInp.value.trim());
+    card.appendChild(linkInp);
+    card.appendChild(el("div",{class:"field-label",text:"Link-Beschriftung (optional — leer = Standardtext „Projekt ansehen“)"}));
+    card.appendChild(langRow(p.link.label));
+    appendImageFields(card, p.image, "Projektbild (optional — leer lassen für Platzhalter)");
+    c.appendChild(card);
+  });
+  c.appendChild(el("button",{class:"btn-add",text:"+ Projekt hinzufügen",onclick:() => {
+    DATA.projects.push({tag:"sci",title:{de:"",en:"",es:""},text:{de:"",en:"",es:""},highlight:false,
+      link:{url:"",label:{de:"",en:"",es:""}},
+      image:{url:"",fit:"cover",pos:"center",alt:{de:"",en:"",es:""},caption:{de:"",en:"",es:""}}});
+    renderProjectsSec();
+  }}));
+}
+
+/* ---------- Bilder ---------- */
+/* Wiederverwendbare Felder: Bild-URL + mehrsprachiger Alt-Text + Caption */
+function appendImageFields(container, imgObj, headline){
+  container.appendChild(el("div",{class:"field-label",text:headline}));
+  container.appendChild(el("label",{text:"Bild- oder Video-URL (leer = kein Bild; .mp4/.webm läuft automatisch in Schleife)"}));
+  const url = el("input",{type:"text",placeholder:"z.B. images/foto.jpg oder https://…"});
+  url.value = imgObj.url || "";
+  url.addEventListener("input", () => imgObj.url = url.value.trim());
+  container.appendChild(url);
+
+  /* Darstellung: Zuschnitt + Ausrichtung des Bildausschnitts */
+  container.appendChild(el("div",{class:"field-label",text:"Darstellung"}));
+  const row = el("div",{style:"display:flex;gap:10px;flex-wrap:wrap;margin-top:4px"});
+  const fitSel = el("select");
+  for (const [v,txt] of [["cover","Füllend zugeschnitten (Standard)"],["contain","Komplett sichtbar (mit Rand)"]])
+    fitSel.appendChild(el("option",{value:v,text:txt}));
+  fitSel.value = imgObj.fit || "cover";
+  fitSel.addEventListener("change", () => imgObj.fit = fitSel.value);
+  row.appendChild(fitSel);
+  const posSel = el("select");
+  for (const [v,txt] of [["center","Zentriert (Standard)"],["top","Oben ausgerichtet"],["bottom","Unten ausgerichtet"],["left","Links ausgerichtet"],["right","Rechts ausgerichtet"]])
+    posSel.appendChild(el("option",{value:v,text:txt}));
+  posSel.value = imgObj.pos || "center";
+  posSel.addEventListener("change", () => imgObj.pos = posSel.value);
+  row.appendChild(posSel);
+  container.appendChild(row);
+
+  container.appendChild(el("div",{class:"field-label",text:"Alt-Text (Beschreibung für Screenreader & SEO)"}));
+  container.appendChild(langRow(imgObj.alt));
+  container.appendChild(el("div",{class:"field-label",text:"Caption / Bildunterschrift (optional)"}));
+  container.appendChild(langRow(imgObj.caption));
+}
+
+function renderImagesSec(){
+  const c = document.getElementById("sec-images"); c.innerHTML = "";
+  c.appendChild(el("div",{class:"item-title",text:"Leere Bild-URL = Bild wird auf der Website nicht angezeigt, das Layout bleibt sauber."}));
+
+  /* Profilbild (erscheint im Über-mich-Bereich) */
+  const prof = el("div",{class:"item-card"});
+  prof.appendChild(el("div",{class:"item-head"},[
+    el("span",{class:"item-title",text:"Profilbild (Über-mich-Bereich)"})
+  ]));
+  appendImageFields(prof, DATA.images.profile, "Profilbild");
+  c.appendChild(prof);
+
+  /* Tanz-Galerie (Unterricht, Bühne, Workshops, Performances) */
+  c.appendChild(el("div",{class:"field-label",text:"— Tanz-Galerie (Unterricht, Bühne, Workshops, Performances) —"}));
+  DATA.images.dance_gallery.forEach((g,i) => {
+    const card = el("div",{class:"item-card"});
+    card.appendChild(el("div",{class:"item-head"},[
+      el("span",{class:"item-title",text:"Galeriebild "+(i+1)}),
+      el("button",{class:"btn-danger",text:"Löschen",onclick:() => {
+        if (confirm("Dieses Bild wirklich entfernen?")){ DATA.images.dance_gallery.splice(i,1); renderImagesSec(); }
+      }})
+    ]));
+    /* Instagram-Embed: hat Vorrang vor der Bild-URL */
+    card.appendChild(el("label",{text:"Instagram-Link (optional — Post/Reel wird eingebettet, hat Vorrang vor Bild)"}));
+    const insta = el("input",{type:"text",placeholder:"z.B. https://www.instagram.com/reel/ABC123/"});
+    insta.value = g.instagram || "";
+    insta.addEventListener("input", () => g.instagram = insta.value.trim());
+    card.appendChild(insta);
+    appendImageFields(card, g, "Galeriebild");
+    c.appendChild(card);
+  });
+  c.appendChild(el("button",{class:"btn-add",text:"+ Galeriebild / Instagram-Video hinzufügen",onclick:() => {
+    DATA.images.dance_gallery.push({url:"",instagram:"",fit:"cover",pos:"center",alt:{de:"",en:"",es:""},caption:{de:"",en:"",es:""}});
+    renderImagesSec();
+  }}));
+}
+
+/* ---------- Export / Import / Vorschau ---------- */
+function showStatus(msg){
+  const s = document.getElementById("status");
+  s.textContent = msg; s.classList.add("show");
+  setTimeout(() => s.classList.remove("show"), 2600);
+}
+
+document.getElementById("btn-export").addEventListener("click", () => {
+  const out = "/* Generiert mit admin.html am " + new Date().toLocaleString() + " */\n" +
+              "window.SITE_CONTENT = " + JSON.stringify(DATA, null, 2) + ";\n";
+  const blob = new Blob([out], {type:"text/javascript"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "content.js";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showStatus("content.js heruntergeladen — auf dem Server ersetzen.");
+});
+
+document.getElementById("btn-preview").addEventListener("click", () => {
+  try {
+    localStorage.setItem("javi_draft", JSON.stringify(DATA));
+    window.open("index.html?preview=1", "_blank");
+  } catch(e){ alert("Vorschau nicht möglich: " + e.message); }
+});
+
+document.getElementById("btn-import").addEventListener("click", () =>
+  document.getElementById("file-import").click());
+
+document.getElementById("file-import").addEventListener("change", ev => {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      /* "window.SITE_CONTENT = {...};" -> JSON extrahieren */
+      const txt = reader.result;
+      const start = txt.indexOf("{");
+      const end = txt.lastIndexOf("}");
+      DATA = normalizeData(JSON.parse(txt.slice(start, end + 1)));
+      renderAll();
+      showStatus("Import erfolgreich — Inhalte geladen.");
+    } catch(e){ alert("Import fehlgeschlagen: " + e.message); }
+  };
+  reader.readAsText(file);
+});
+
+function renderAll(){
+  renderMetaSec();
+  renderSocialsSec();
+  renderUiSec();
+  renderListSec("sec-academic", DATA.academic, "academic");
+  renderListSec("sec-dance", DATA.dance, "dance");
+  renderSkillsSec();
+  renderProjectsSec();
+  renderImagesSec();
+}
+renderAll();
+</script>
+</body>
+</html>
